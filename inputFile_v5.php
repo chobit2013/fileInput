@@ -67,7 +67,7 @@
             // $startTime = microtime(true);
             // 計算起始時間
     
-            include("./fileInput_conn.php");
+            include("inputFile_conn.php");
             // 連線檔匯入
             echo "<br>";
 
@@ -135,13 +135,13 @@
                 // 檢查格式
 
                 if ($newRowArr[4] > 9000) {
-                    $newRowArr[5] = "NG" . "\n";
+                    $newRowArr[5] = trim("NG");
                 }
                 if ($newRowArr[4] < 7000) {
-                    $newRowArr[5] = "NG" . "\n";
+                    $newRowArr[5] = trim("NG");
                 }
                 if ($newRowArr[4] < 9000 && $newRowArr[4] > 7000) {
-                    $newRowArr[5] = "OK" . "\n";
+                    $newRowArr[5] = trim("YES");
                 }
             
                 if (strlen($newRowArr[1]) === 0) {

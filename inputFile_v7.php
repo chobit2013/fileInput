@@ -7,56 +7,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>檔案上傳</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-JavaScript-Templates/3.20.0/js/tmpl.min.js" integrity="sha512-yQJVqoTPFSC73MaslsQaVJ0zHku4Cby3NpQzweSYju+kduWspfF4HmJ3zAo1QGERfsoXdf45q54ph8XTjOlp8A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="InputFile.css">
     <style>
         .table1 {
-            border: 4px solid green;
+            border: 2px solid green;
             border-collapse: collapse;
         }
 
         .table1 th,
         .table1 td {
-            border: 1.5px solid green;
+            border: 1px solid green;
             padding: 5px;
             text-align: left;
+        }
+
+        .td1 {
+            color: red;
         }
     </style>
 </head>
 
 <body>
     <form action="" method="post" enctype="multipart/form-data">
-        <p>查詢時間區間內結果</p>
+        <h3>查詢資料結果</h3>
         <br>
         <label for="uploadFile">上傳檔案</label>
         <br>
         <input type="file" name="uploadFile" accept=".txt" id="uploadFile">
         <br>
         <br>
+        <input type="submit" value="送出">
+    </form>
+
+    <form action="" method="post" enctype="multipart/form-data">
+        <br>
+        <br>
         <label for="uploadDate">輸入起始日期</label>
         <br>
-        <input type="date" name="uploadDate" id="uploadDate">
+        <input type="date" name="uploadDate" id="uploadDate" required>
         <br>
         <br>
         <label for="uploadDate_end">輸入結束日期</label>
         <br>
-        <input type="date" name="uploadDate_end" id="uploadDate_end">
+        <input type="date" name="uploadDate_end" id="uploadDate_end" required>
         <br>
         <br>
         <input type="submit" value="送出">
-        <button onclick="deleteText()">刪除畫面資料</button>
     </form>
     <br>
-    <script>
-        function deleteText() {
-            let element = document.getElementsByClassName('table1');
-            element.parentNode.removeChild(element);
-        };
-    </script>
 </body>
+
 </html>
 
 <?php
-header("Content-Type: text/html; charset=utf-8");
-include("./fileInput_conn.php");
+// header("Content-Type: text/html; charset=utf-8");
+include("./inputFile_conn.php");
 // 連線檔匯入
 // echo "<br>";
 
@@ -68,6 +73,8 @@ if (isset($_FILES["uploadFile"])) {
     $uploadFileName = $_FILES["uploadFile"]["name"];
     $uploadFileType = strtolower(pathinfo($uploadFileName, PATHINFO_EXTENSION));
     // 小寫檔案副檔名
+
+
 
 
     if (in_array($uploadFileType, $allowedType)) {
@@ -119,13 +126,13 @@ if (isset($_FILES["uploadFile"])) {
             // 檢查格式
 
             if ($newRowArr[4] > 9000) {
-                $newRowArr[5] = "NG" . "\n";
+                $newRowArr[5] = trim("NG");
             }
             if ($newRowArr[4] < 7000) {
-                $newRowArr[5] = "NG" . "\n";
+                $newRowArr[5] = trim("NG");
             }
             if ($newRowArr[4] < 9000 && $newRowArr[4] > 7000) {
-                $newRowArr[5] = "OK" . "\n";
+                $newRowArr[5] = trim("OK");
             }
 
             if (strlen($newRowArr[1]) === 0) {
@@ -144,37 +151,33 @@ if (isset($_FILES["uploadFile"])) {
                     continue;
                 };
             }
+
             // var_dump($newRowArr);
             // 檢查格式
 
             $sql_repeatData = "SELECT workList1, workList2, workList3 FROM checktable WHERE workList1 = '$newRowArr[1]' OR workList2 = '$newRowArr[2]' OR workList3 = '$newRowArr[3]'";
             //檢查資料庫中一筆資料是否和匯入資料有相同
             $result_repeatData = $db_link->query($sql_repeatData);
-            // if($result_repeatData){
-            //奇怪寫法
+
             if ($result_repeatData->num_rows == false) {
-                $sql_insert = "INSERT INTO checktable (ptTime,workList1,workList2,workList3,prValue,nowResult) VALUES('$newRowArr[0]','$newRowArr[1]','$newRowArr[2]','$newRowArr[3]','$newRowArr[4]','$newRowArr[5]')";
+                $sql_insert1 = "INSERT INTO checktable (ptTime,workList1,workList2,workList3,prValue,nowResult) VALUES('$newRowArr[0]','$newRowArr[1]','$newRowArr[2]','$newRowArr[3]','$newRowArr[4]','$newRowArr[5]')";
                 //匯入資料到資料庫，$newRowArr[0]是個值，需要" "
-                $db_link->query($sql_insert);
+                $db_link->query($sql_insert1);
             } else {
                 // echo $db_link->error;
                 // echo "檢測到匯入檔案的資料重複" . "<br>";
                 continue;
             }
-            // }
         }
-    } else {
-        echo "<script>alert('請重新上傳資料');</script>";
-        exit();
     }
+}
 
-    if (empty($_POST["uploadDate"]) || empty($_POST["uploadDate_end"])) {
-        echo "<script>alert('請填寫日期');</script>";
-        exit();
-    }
-
-
-
+if (isset($_POST["uploadDate"]) && isset($_POST["uploadDate"])) {
+    // if (empty($_POST["uploadDate"]) || empty($_POST["uploadDate_end"])) {
+    //     echo "請填寫日期";
+    //     exit();
+    // }
+    //沒填日期
     if (!empty($_POST["uploadDate"] && $_POST["uploadDate_end"])) {
         $setDate = date("Y-m-d",  strtotime($_POST["uploadDate"]));
         $setDate1 = date("Y-m-d",  strtotime($_POST["uploadDate_end"]));
@@ -182,25 +185,33 @@ if (isset($_FILES["uploadFile"])) {
         // echo $setDate."<br>";
         // echo $setDate1."<br>";
 
-        $sql_setDate = "SELECT ptTime, nowResult FROM checktable WHERE ptTime BETWEEN '$setDate' AND '$setDate1'";
-        // echo $sql_setDate."<br>";
 
-        $result_setData = $db_link->query($sql_setDate);
-        // echo gettype($result_setData);
+        $sql_setDate_view = "CREATE VIEW table_view1 AS SELECT Date(ptTime) AS 'pTime', nowResult as result 
+                            FROM checktable";
+        $db_link->query($sql_setDate_view);
 
-        if ($result_setData->num_rows == 0) {
-            echo "查無資料";
-            exit();
+        $sql_setDate_operator = "SELECT pTime, SUM(result='OK'), SUM(result='NG') 
+                                FROM table_view1 
+                                WHERE  pTime BETWEEN '$setDate' AND '$setDate1' 
+                                GROUP BY pTime";
+        //$sql_setDate_view_operator= "SELECT a.date, SUM(a.result='OK'), SUM(a.result='NG') FROM (SELECT Date(ptTime) AS 'date', nowResult as result FROM checktable) as a WHERE  a.date BETWEEN '$setDate' AND '$setDate1' GROUP BY a.date";
+
+        $result_setData = $db_link->query($sql_setDate_operator);
+        // var_dump($result_setData_operator);
+
+
+        while($result_setData_row =  $result_setData -> fetch_row()) {
+            echo "<table class='table1'><tr><th>時間</th><th>結果OK</th><th>結果NG</th></tr>";
+            echo "<tr><td>" . $result_setData_row[0] . "</td><td>" . $result_setData_row[1] . "筆OK</td><td class='td1'>" . $result_setData_row[2] . "筆NG</td></tr>";
+            echo "</table><br>";
         }
-
-        while ($row_setDate = $result_setData->fetch_row()) {
-            echo "<table class='table1'><tr><th>ptTime</th><th>nowResult</th></tr>";
-            foreach ($result_setData as $item => $value) {
-                echo "<tr><td>" . $value["ptTime"] . "</td><td>" . $value["nowResult"] . "</td></tr>";
-            }
-            echo "</table>";
-            exit();
-        }
+        
+        // 改寫
+        // foreach($result_setData as $itme => $value) {
+        //     echo "<table class='table1'><tr><th>時間</th><th>結果OK</th><th>結果NG</th></tr>";
+        //     echo "<tr><td>" . $value["pTime"] . "</td><td>" . $value["SUM(result='OK')"] . "筆OK</td><td class='td1'>" . $value["SUM(result='NG')"] . "筆NG</td></tr>";
+        //     echo "</table><br>";
+        // }
     }
 }
 ?>

@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>檔案上傳</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-JavaScript-Templates/3.20.0/js/tmpl.min.js" integrity="sha512-yQJVqoTPFSC73MaslsQaVJ0zHku4Cby3NpQzweSYju+kduWspfF4HmJ3zAo1QGERfsoXdf45q54ph8XTjOlp8A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="InputFile.css">
     <style>
         .table1 {
             border: 4px solid green;
@@ -19,12 +20,15 @@
             padding: 5px;
             text-align: left;
         }
+        .td1{
+            color:red;
+        }
     </style>
 </head>
 
 <body>
     <form action="" method="post" enctype="multipart/form-data">
-        <p>查詢時間區間內結果</p>
+        <p>查詢上傳檔案結果</p>
         <br>
         <label for="uploadFile">上傳檔案</label>
         <br>
@@ -55,8 +59,8 @@
 </html>
 
 <?php
-header("Content-Type: text/html; charset=utf-8");
-include("./fileInput_conn.php");
+// header("Content-Type: text/html; charset=utf-8");
+include("./inputFile_conn.php");
 // 連線檔匯入
 // echo "<br>";
 
@@ -69,8 +73,15 @@ if (isset($_FILES["uploadFile"])) {
     $uploadFileType = strtolower(pathinfo($uploadFileName, PATHINFO_EXTENSION));
     // 小寫檔案副檔名
 
+    
+
 
     if (in_array($uploadFileType, $allowedType)) {
+        if (empty($_POST["uploadDate"]) || empty($_POST["uploadDate_end"])) {
+            echo "<script>alert('請填寫日期');</script>";
+            exit();
+        }
+
         // 檔案副檔名等於定義允許的副檔名
         // echo "上傳檔案類型符合格式" . "<br>";
         move_uploaded_file($_FILES["uploadFile"]["tmp_name"], $fileTmpDir . $_FILES["uploadFile"]["name"]);
@@ -119,13 +130,13 @@ if (isset($_FILES["uploadFile"])) {
             // 檢查格式
 
             if ($newRowArr[4] > 9000) {
-                $newRowArr[5] = "NG" . "\n";
+                $newRowArr[5] = trim("NG");
             }
             if ($newRowArr[4] < 7000) {
-                $newRowArr[5] = "NG" . "\n";
+                $newRowArr[5] = trim("NG");
             }
             if ($newRowArr[4] < 9000 && $newRowArr[4] > 7000) {
-                $newRowArr[5] = "OK" . "\n";
+                $newRowArr[5] = trim("OK");
             }
 
             if (strlen($newRowArr[1]) === 0) {
@@ -144,24 +155,24 @@ if (isset($_FILES["uploadFile"])) {
                     continue;
                 };
             }
+
             // var_dump($newRowArr);
             // 檢查格式
 
             $sql_repeatData = "SELECT workList1, workList2, workList3 FROM checktable WHERE workList1 = '$newRowArr[1]' OR workList2 = '$newRowArr[2]' OR workList3 = '$newRowArr[3]'";
             //檢查資料庫中一筆資料是否和匯入資料有相同
             $result_repeatData = $db_link->query($sql_repeatData);
-            // if($result_repeatData){
-            //奇怪寫法
+            
             if ($result_repeatData->num_rows == false) {
                 $sql_insert = "INSERT INTO checktable (ptTime,workList1,workList2,workList3,prValue,nowResult) VALUES('$newRowArr[0]','$newRowArr[1]','$newRowArr[2]','$newRowArr[3]','$newRowArr[4]','$newRowArr[5]')";
                 //匯入資料到資料庫，$newRowArr[0]是個值，需要" "
                 $db_link->query($sql_insert);
+                
             } else {
                 // echo $db_link->error;
                 // echo "檢測到匯入檔案的資料重複" . "<br>";
                 continue;
             }
-            // }
         }
     } else {
         echo "<script>alert('請重新上傳資料');</script>";
@@ -174,33 +185,41 @@ if (isset($_FILES["uploadFile"])) {
     }
 
 
-
     if (!empty($_POST["uploadDate"] && $_POST["uploadDate_end"])) {
         $setDate = date("Y-m-d",  strtotime($_POST["uploadDate"]));
         $setDate1 = date("Y-m-d",  strtotime($_POST["uploadDate_end"]));
         //輸入時間，轉換所需格式
         // echo $setDate."<br>";
         // echo $setDate1."<br>";
+        $sql_setDate = "SELECT COUNT(*) FROM checktable WHERE ptTime BETWEEN '$setDate' AND '$setDate1'";
 
-        $sql_setDate = "SELECT ptTime, nowResult FROM checktable WHERE ptTime BETWEEN '$setDate' AND '$setDate1'";
-        // echo $sql_setDate."<br>";
-
+        $sql_setDate1 = "SELECT ptTime, nowResult FROM checktable WHERE  ptTime BETWEEN '$setDate' AND '$setDate1'";
+        
         $result_setData = $db_link->query($sql_setDate);
-        // echo gettype($result_setData);
+        $result_setData1 = $db_link->query($sql_setDate1);
 
-        if ($result_setData->num_rows == 0) {
+        if(($result_setData->num_rows == 0) || ($result_setData1->num_rows == 0)){
             echo "查無資料";
-            exit();
         }
 
         while ($row_setDate = $result_setData->fetch_row()) {
-            echo "<table class='table1'><tr><th>ptTime</th><th>nowResult</th></tr>";
             foreach ($result_setData as $item => $value) {
-                echo "<tr><td>" . $value["ptTime"] . "</td><td>" . $value["nowResult"] . "</td></tr>";
+                echo "總共".$value["COUNT(*)"]."筆"."<br>";
             }
-            echo "</table>";
+        }
+
+        while ($row_setDate1 = $result_setData1->fetch_row()) {
+            echo "<table class='table1'><tr><th>時間</th><th>結果OK</th><th>結果NG</th></tr>";
+            foreach ($result_setData1 as $item => $value) {
+                if($value["nowResult"] == "OK"){
+                    echo "<tr><td>" . $value["ptTime"]."</td><td>".$value["nowResult"]."</td><td>"."</td></tr>";
+                }else{
+                    echo "<tr><td>".$value["ptTime"]."</td><td>"."</td><td class='td1'>".$value["nowResult"]."</td></tr>";
+                }
+            }echo "</table>";
             exit();
         }
+        //輸出表格
     }
 }
 ?>

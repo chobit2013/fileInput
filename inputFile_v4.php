@@ -4,7 +4,7 @@ header("Content-Type: text/html; charset=utf-8");
 // $startTime = microtime(true);
 // 計算起始時間
 
-include("./fileInput_conn.php");
+include("inputFile_conn.php");
 //連線檔匯入
 
 $fileName = "y_2023(3-1).txt";
@@ -65,13 +65,13 @@ while ($row = fgets($oldFile)) {
     // var_dump($newRowArr);
 
     if ($newRowArr[4] > 9000) {
-        $newRowArr[5] = "NG" . "\n";
+        $newRowArr[5] = trim("NG");
     }
     if ($newRowArr[4] < 7000) {
-        $newRowArr[5] = "NG" . "\n";
+        $newRowArr[5] = trim("NG");
     }
     if ($newRowArr[4] < 9000 && $newRowArr[4] > 7000) {
-        $newRowArr[5] = "OK" . "\n";
+        $newRowArr[5] = trim("YES");
     }
 
     if (strlen($newRowArr[1]) === 0) {
@@ -90,7 +90,8 @@ while ($row = fgets($oldFile)) {
         };
     }
 
-    // var_dump($newRowArr);
+    // var_dump($value);
+
 
     $sql_insert = "INSERT INTO checktable (ptTime,workList1,workList2,workList3,prValue,nowResult) VALUES('$newRowArr[0]','$newRowArr[1]','$newRowArr[2]','$newRowArr[3]','$newRowArr[4]','$newRowArr[5]')";
     //$newRowArr[0]是個值，需要" "

@@ -20,7 +20,6 @@ foreach ($charTab_row as $item => $value) {
 
 }
 
-
 foreach ($charTab_row as $item) {
     $charTab_str = implode("\t", $item);
     //陣列轉字串
