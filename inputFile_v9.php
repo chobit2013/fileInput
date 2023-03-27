@@ -121,21 +121,15 @@ if (isset($_FILES["uploadFile"])) {
             }
             //壓力值判斷為true或false
 
-            if ((strlen($newRowArr[1]) === 0)) {
-                if ($newRowArr) {
-                    continue;
-                };
+            if (strlen($newRowArr[1]) === 0) {
+                continue;
             }
-            if ((strlen($newRowArr[2]) === 0)) {
-                if ($newRowArr) {
-                    continue;
-                };
+            if (strlen($newRowArr[2]) === 0) {
+                continue;
             }
-            if ((strlen($newRowArr[3]) === 0)) {
-                if ($newRowArr) {
-                    continue;
-                };
-            } 
+            if (strlen($newRowArr[3]) === 0) {
+                continue;
+            }
             //陣列元素為0，則跳過
 
             // if (strlen($newRowArr[0]) === 19) {
@@ -159,17 +153,6 @@ if (isset($_FILES["uploadFile"])) {
             // }
             // 檢查格式
 
-            // $sql_repeatData1 = "SELECT workList1 
-            //                     FROM checktable WHERE workList1 = '$newRowArr[1]'";
-            // $sql_repeatData2 = "SELECT workList2 
-            //                     FROM checktable WHERE workList2 = '$newRowArr[2]'";
-            // $sql_repeatData3 = "SELECT workList3 
-            //                     FROM checktable WHERE workList3 = '$newRowArr[3]'";
-            //不寫在同一串是為了提升效率，用OR是各跑一次，共跑三次
-
-            // $result_repeatData1 = $db_link->query($sql_repeatData1);
-            // $result_repeatData2 = $db_link->query($sql_repeatData2);
-            // $result_repeatData3 = $db_link->query($sql_repeatData3);
             $sql_repeatData = "SELECT workList1 FROM checktable WHERE workList1 = '$newRowArr[1]' 
                                 UNION SELECT workList2 FROM checktable WHERE workList2 = '$newRowArr[2]'";
 
@@ -197,7 +180,12 @@ if (isset($_FILES["uploadFile"])) {
                 $db_link->query($sql_update);
             }
         }
+        exit();
+    } else {
+        exit();
     }
+} else {
+    exit();
 }
 
 if (isset($_POST["uploadDate"])) {
@@ -260,11 +248,11 @@ if (isset($_POST["uploadDate"])) {
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: [<?php 
-                        foreach ($bar_title_date as $item => $value) {
-                            echo "'" . $value . "'" . ",";
-                        }
-                        ?>],
+                labels: [<?php
+                            foreach ($bar_title_date as $item => $value) {
+                                echo "'" . $value . "'" . ",";
+                            }
+                            ?>],
                 datasets: [{
                         label: 'OK',
                         data: [<?php
@@ -276,7 +264,7 @@ if (isset($_POST["uploadDate"])) {
                     },
                     {
                         label: 'NG',
-                        data: [<?php 
+                        data: [<?php
                                 foreach ($bar_title_ng as $item => $value) {
                                     echo "'" . $value . "'" . ",";
                                 }
