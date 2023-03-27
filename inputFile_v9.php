@@ -153,8 +153,13 @@ if (isset($_FILES["uploadFile"])) {
             // }
             // 檢查格式
 
-            $sql_repeatData = "SELECT workList1 FROM checktable WHERE workList1 = '$newRowArr[1]' 
-                                UNION SELECT workList2 FROM checktable WHERE workList2 = '$newRowArr[2]'";
+            $sql_repeatData = "SELECT workList1 
+                                FROM checktable 
+                                WHERE workList1 = '$newRowArr[1]' 
+                                UNION 
+                                SELECT workList2 
+                                FROM checktable 
+                                WHERE workList2 = '$newRowArr[2]'";
 
             $result_repeatData1 = $db_link->query($sql_repeatData);
 
