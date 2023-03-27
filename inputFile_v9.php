@@ -158,7 +158,7 @@ if (isset($_FILES["uploadFile"])) {
 
             $result_repeatData1 = $db_link->query($sql_repeatData);
 
-            if (($result_repeatData1->rowCount() == 0)) {
+            if ($result_repeatData1->rowCount() == 0) {
                 // if (($result_repeatData1->rowCount() == 0) or ($result_repeatData2->rowCount() == 0) or ($result_repeatData3->rowCount() == 0)) {
                 //PDO rowCount()
                 //檢查資料庫中一筆資料是否和匯入資料有相同
