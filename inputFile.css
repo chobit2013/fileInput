@@ -380,21 +380,23 @@ template {
 }
 
 /* initialization end */
+
 .wrapper {
     width: 1394px;
     margin: 30px 60px;
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: flex-start;
 }
 
 .inputForm {
     width: 120px;
+    padding-right: 10px;
 }
 
 .allTable {
     width: 300px;
-    align-items: center;
+    padding:0 10px;
 }
 
 .label_uploadFile {
@@ -403,7 +405,6 @@ template {
 
 .uploadFile {
     position: absolute;
-    top: 23.5;
     left: 13.5px;
     opacity: 0;
     /* border: 1px solid red; */

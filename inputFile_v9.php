@@ -1,6 +1,7 @@
 <?php
-$startTime = microtime(true);
+// $startTime = microtime(true);
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -52,7 +53,22 @@ include("./inputFile_pdo_conn.php");
 // 連線檔匯入
 // echo "<br>";
 
+$sql_count1 = "SELECT COUNT(*) as count1 FROM checktable";
+$result_count1 = $db_link->prepare($sql_count1);
+$result_count1->execute();
+$result_row1 = $result_count1->fetch(PDO::FETCH_ASSOC);
+// echo $result_row1["count1"];
+// 計算總表起始筆數
+$sql_count2 = "SELECT COUNT(*) as count2 FROM checktable_repeat";
+$result_count2 = $db_link->prepare($sql_count2);
+$result_count2->execute();
+$result_row2 = $result_count2->fetch(PDO::FETCH_ASSOC);
+// echo $result_row["count2"];
+// 計算重複紀錄表起始筆數
+
+
 if (isset($_FILES["uploadFile"])) {
+
     $fileTmpDir = dirname(dirname(__FILE__)) . "\project_file_tmp\\";
     $allowedType = array("txt");
     // 允許檔案副檔名類型
@@ -60,9 +76,6 @@ if (isset($_FILES["uploadFile"])) {
     $uploadFileName = $_FILES["uploadFile"]["name"];
     $uploadFileType = strtolower(pathinfo($uploadFileName, PATHINFO_EXTENSION));
     // 小寫檔案副檔名
-
-
-
 
     if (in_array($uploadFileType, $allowedType)) {
         // 檔案副檔名等於定義允許的副檔名
@@ -112,15 +125,6 @@ if (isset($_FILES["uploadFile"])) {
             // var_dump($newRowArr);
             // 檢查格式
 
-            if ($newRowArr[4] > 9000) {
-                $newRowArr[5] = trim("0");
-            } elseif ($newRowArr[4] < 7000) {
-                $newRowArr[5] = trim("0");
-            } else {
-                $newRowArr[5] = trim("1");
-            }
-            //壓力值判斷為true或false
-
             if (strlen($newRowArr[1]) === 0) {
                 continue;
             }
@@ -131,6 +135,15 @@ if (isset($_FILES["uploadFile"])) {
                 continue;
             }
             //陣列元素為0，則跳過
+
+            if ($newRowArr[4] > 9000) {
+                $newRowArr[5] = trim("0");
+            } elseif ($newRowArr[4] < 7000) {
+                $newRowArr[5] = trim("0");
+            } else {
+                $newRowArr[5] = trim("1");
+            }
+            //壓力值判斷為true或false
 
             // if (strlen($newRowArr[0]) === 19) {
             //     echo "A";
@@ -154,13 +167,12 @@ if (isset($_FILES["uploadFile"])) {
             // 檢查格式
 
             $sql_repeatData = "SELECT workList1 
-                                FROM checktable 
-                                WHERE workList1 = '$newRowArr[1]' 
-                                UNION 
-                                SELECT workList2 
-                                FROM checktable 
-                                WHERE workList2 = '$newRowArr[2]'";
-
+                                    FROM checktable 
+                                    WHERE workList1 = '$newRowArr[1]' 
+                                    UNION
+                                    SELECT workList2 
+                                    FROM checktable 
+                                    WHERE workList2 = '$newRowArr[2]'";
             $result_repeatData1 = $db_link->query($sql_repeatData);
 
             if ($result_repeatData1->rowCount() == 0) {
@@ -169,29 +181,57 @@ if (isset($_FILES["uploadFile"])) {
                 //檢查資料庫中一筆資料是否和匯入資料有相同
                 $sql_insert = "INSERT INTO checktable (ptTime,workList1,workList2,workList3,prValue,nowResult) 
                                 VALUES('$newRowArr[0]','$newRowArr[1]','$newRowArr[2]','$newRowArr[3]','$newRowArr[4]','$newRowArr[5]')";
-
-                $db_link->query($sql_insert);
+                $result_insert = $db_link->query($sql_insert);
             } else {
                 $sql_copy = "INSERT INTO checktable_repeat 
-                                SELECT ptTime, workList1, workList2, workList3, prValue, nowResult 
-                                FROM checktable 
-                                WHERE workList3 = '$newRowArr[3]'";
+                                    SELECT ptTime, workList1, workList2, workList3, prValue, nowResult 
+                                    FROM checktable 
+                                    WHERE workList3 = '$newRowArr[3]'";
 
                 $sql_update = "UPDATE checktable 
-                                SET ptTime = '$newRowArr[0]', workList1 = '$newRowArr[1]', workList2 = '$newRowArr[2]', workList3 = '$newRowArr[3]', prValue = '$newRowArr[4]', nowResult = '$newRowArr[5]' 
-                                WHERE workList3 = '$newRowArr[3]'";
+                                    SET ptTime = '$newRowArr[0]', workList1 = '$newRowArr[1]', workList2 = '$newRowArr[2]', workList3 = '$newRowArr[3]', prValue = '$newRowArr[4]', nowResult = '$newRowArr[5]' 
+                                    WHERE workList3 = '$newRowArr[3]'";
 
                 $db_link->query($sql_copy);
                 $db_link->query($sql_update);
             }
         }
+
+        $sql_count1_1 = "SELECT COUNT(*) as count1_1 FROM checktable";
+        $result_count1_1 = $db_link->prepare($sql_count1_1);
+        $result_count1_1->execute();
+        $result_row1_1 = $result_count1_1->fetch(PDO::FETCH_ASSOC);
+        // 計算總表起始筆數
+
+        $sql_count2_1 = "SELECT COUNT(*) as count2_1 FROM checktable_repeat";
+        $result_count2_1 = $db_link->prepare($sql_count2_1);
+        $result_count2_1->execute();
+        $result_row2_1 = $result_count2_1->fetch(PDO::FETCH_ASSOC);
+        // 計算重複紀錄表起始筆數
+
+        $sql_count1_2 = "SELECT COUNT(*) as count1_2 FROM checktable";
+        $result_count1_2 = $db_link->prepare($sql_count1_2);
+        $result_count1_2->execute();
+        $result_row1_2 = $result_count1_2->fetch(PDO::FETCH_ASSOC);
+
+        $sql_count2_2 = "SELECT COUNT(*) as count2_2 FROM checktable_repeat";
+        $result_count2_2 = $db_link->prepare($sql_count2_2);
+        $result_count2_2->execute();
+        $result_row2_2 = $result_count2_2->fetch(PDO::FETCH_ASSOC);
+        echo "<br><div><div>已匯入檔案</div>";
+        echo "<br><div>本次匯入共" . ($result_row1_1["count1_1"] - $result_row1["count1"]) . "筆資料</div>";
+        echo "<br><div>本次重複共" . ($result_row2_1["count2_1"] - $result_row2["count2"]) . "筆資料</div>";
+        echo "<br><div>總表共" . $result_row1_2["count1_2"] . "筆資料</div>";
+        echo "<br><div>重複紀錄表共" . $result_row2_2["count2_2"] . "筆資料</div>";
+        echo "<br><div>請選擇日期</div>";
         exit();
     } else {
+        echo "<br><div>請匯入文字檔格式檔案</div>";
         exit();
     }
 } else {
-    exit();
-}
+    echo "<br><div>請匯入文字檔格式檔案或選擇日期</div>";
+};
 
 if (isset($_POST["uploadDate"])) {
     if (!empty($_POST["uploadDate"])) {
@@ -210,6 +250,8 @@ if (isset($_POST["uploadDate"])) {
         $result_setData = $db_link->query($sql_setData);
         // var_dump($result_setData);
         if ($result_setData->rowCount() == 0) {
+            echo "<br><div>查無資料</div>";
+            echo "</div>";
             exit();
         }
 
@@ -233,6 +275,7 @@ if (isset($_POST["uploadDate"])) {
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -248,10 +291,11 @@ if (isset($_POST["uploadDate"])) {
         <canvas id="myChart"></canvas>
     </div>
     </div>
+    </div>
     <script>
         const ctx = document.getElementById('myChart');
         new Chart(ctx, {
-            type: 'line',
+            type: 'bar',
             data: {
                 labels: [<?php
                             foreach ($bar_title_date as $item => $value) {
@@ -300,8 +344,9 @@ if (isset($_POST["uploadDate"])) {
 </body>
 
 </html>
+
 <?php
-$endTime = microtime(true);
-$totalTime = $endTime - $startTime;
-echo "程式執行時間:" . $totalTime . "秒";
+// $endTime = microtime(true);
+// $totalTime = $endTime - $startTime;
+// echo "程式執行時間:" . $totalTime . "秒";
 ?>
