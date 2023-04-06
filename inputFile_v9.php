@@ -39,7 +39,7 @@
                 <input type="date" name="uploadDate" id="uploadDate" required>
                 <br>
                 <br>
-                <input type="submit" value="送出">
+                <input type="submit" value="查詢">
             </form>
         </div>
 </body>
@@ -58,13 +58,14 @@ $result_count1 = $db_link->prepare($sql_count1);
 $result_count1->execute();
 $result_row1 = $result_count1->fetch(PDO::FETCH_ASSOC);
 // echo $result_row1["count1"];
-// 計算總表起始筆數
+// 計算前總表原筆數
+
 $sql_count2 = "SELECT COUNT(*) as count2 FROM checktable_repeat";
 $result_count2 = $db_link->prepare($sql_count2);
 $result_count2->execute();
 $result_row2 = $result_count2->fetch(PDO::FETCH_ASSOC);
 // echo $result_row["count2"];
-// 計算重複紀錄表起始筆數
+// 計算前重複紀錄表原筆數
 
 
 if (isset($_FILES["uploadFile"])) {
@@ -201,36 +202,27 @@ if (isset($_FILES["uploadFile"])) {
         $result_count1_1 = $db_link->prepare($sql_count1_1);
         $result_count1_1->execute();
         $result_row1_1 = $result_count1_1->fetch(PDO::FETCH_ASSOC);
-        // 計算總表起始筆數
+        // 計算後總表筆數
 
         $sql_count2_1 = "SELECT COUNT(*) as count2_1 FROM checktable_repeat";
         $result_count2_1 = $db_link->prepare($sql_count2_1);
         $result_count2_1->execute();
         $result_row2_1 = $result_count2_1->fetch(PDO::FETCH_ASSOC);
-        // 計算重複紀錄表起始筆數
+        // 計算後重複紀錄表計算筆數
 
-        $sql_count1_2 = "SELECT COUNT(*) as count1_2 FROM checktable";
-        $result_count1_2 = $db_link->prepare($sql_count1_2);
-        $result_count1_2->execute();
-        $result_row1_2 = $result_count1_2->fetch(PDO::FETCH_ASSOC);
-
-        $sql_count2_2 = "SELECT COUNT(*) as count2_2 FROM checktable_repeat";
-        $result_count2_2 = $db_link->prepare($sql_count2_2);
-        $result_count2_2->execute();
-        $result_row2_2 = $result_count2_2->fetch(PDO::FETCH_ASSOC);
         echo "<br><div><div>已匯入檔案</div>";
         echo "<br><div>本次匯入共" . ($result_row1_1["count1_1"] - $result_row1["count1"]) . "筆資料</div>";
         echo "<br><div>本次重複共" . ($result_row2_1["count2_1"] - $result_row2["count2"]) . "筆資料</div>";
-        echo "<br><div>總表共" . $result_row1_2["count1_2"] . "筆資料</div>";
-        echo "<br><div>重複紀錄表共" . $result_row2_2["count2_2"] . "筆資料</div>";
-        echo "<br><div>請選擇日期</div>";
+        echo "<br><div>總表共" . $result_row1_1["count1_1"] . "筆資料</div>";
+        echo "<br><div>重複紀錄表共" . $result_row2_1["count2_1"] . "筆資料</div>";
+        echo "<br><div>請選擇日期查詢</div>";
         exit();
     } else {
         echo "<br><div>請匯入文字檔格式檔案</div>";
         exit();
     }
 } else {
-    echo "<br><div>請匯入文字檔格式檔案或選擇日期</div>";
+    echo "<br><div>請匯入文字檔格式檔案或選擇日期查詢</div>";
 };
 
 if (isset($_POST["uploadDate"])) {
