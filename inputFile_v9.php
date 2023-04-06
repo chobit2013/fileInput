@@ -1,5 +1,5 @@
 <?php
-// $startTime = microtime(true);
+$startTime = microtime(true);
 ?>
 
 <!DOCTYPE html>
@@ -137,6 +137,39 @@ if (isset($_FILES["uploadFile"])) {
             }
             //陣列元素為0，則跳過
 
+            if (substr($newRowArr[1], 0, 1) !== "P") {
+                continue;
+            }
+            if (substr($newRowArr[2], 0, 1) !== "P") {
+                continue;
+            }
+            if (substr($newRowArr[3], 0, 1) !== "P") {
+                continue;
+            }
+            // 陣列元素字元不為P，則跳過
+
+            if (substr($newRowArr[1], 8, 6) !== "-00-A:") {
+                continue;
+            }
+            if (substr($newRowArr[2], 8, 6) !== "-00-A:") {
+                continue;
+            }
+            if (substr($newRowArr[3], 8, 6) !== "-00-A:") {
+                continue;
+            }
+            //陣列元素字元不為-00-A:，則跳過
+
+            if (substr($newRowArr[1], 29, 1) !== "0") {
+                continue;
+            }
+            if (substr($newRowArr[2], 29, 1) !== "0") {
+                continue;
+            }
+            if (substr($newRowArr[3], 29, 1) !== "0") {
+                continue;
+            }
+            // 陣列元素字元不為0，則跳過
+
             if ($newRowArr[4] > 9000) {
                 $newRowArr[5] = trim("0");
             } elseif ($newRowArr[4] < 7000) {
@@ -144,28 +177,7 @@ if (isset($_FILES["uploadFile"])) {
             } else {
                 $newRowArr[5] = trim("1");
             }
-            //壓力值判斷為true或false
-
-            // if (strlen($newRowArr[0]) === 19) {
-            //     echo "A";
-            // }
-            // if (strlen($newRowArr[0]) === 30) {
-            //     echo "B";
-            // }
-            // if (strlen($newRowArr[0]) === 30) {
-            //     echo "C";
-            // }
-            // if (strlen($newRowArr[0]) === 30) {
-            //     echo "D";
-            // }
-            // if (strlen($newRowArr[0]) === 19) {
-            //     echo "E";
-            // }
-
-            // foreach($newRowArr as $item => $value){
-            //     echo $value."<br>";
-            // }
-            // 檢查格式
+            //判斷壓力值為0或1
 
             $sql_repeatData = "SELECT workList1 
                                     FROM checktable 
@@ -210,19 +222,19 @@ if (isset($_FILES["uploadFile"])) {
         $result_row2_1 = $result_count2_1->fetch(PDO::FETCH_ASSOC);
         // 計算後重複紀錄表計算筆數
 
-        echo "<br><div><div>已匯入檔案</div>";
-        echo "<br><div>本次匯入共" . ($result_row1_1["count1_1"] - $result_row1["count1"]) . "筆資料</div>";
-        echo "<br><div>本次重複共" . ($result_row2_1["count2_1"] - $result_row2["count2"]) . "筆資料</div>";
-        echo "<br><div>總表共" . $result_row1_1["count1_1"] . "筆資料</div>";
-        echo "<br><div>重複紀錄表共" . $result_row2_1["count2_1"] . "筆資料</div>";
-        echo "<br><div>請選擇日期查詢</div>";
-        exit();
+        echo "<ul><li>已匯入檔案</li>";
+        echo "<br><li>本次匯入共" . ($result_row1_1["count1_1"] - $result_row1["count1"]) . "筆資料</li>";
+        echo "<br><li>本次重複共" . ($result_row2_1["count2_1"] - $result_row2["count2"]) . "筆資料</li>";
+        echo "<br><li>總表共" . $result_row1_1["count1_1"] . "筆資料</li>";
+        echo "<br><li>重複紀錄表共" . $result_row2_1["count2_1"] . "筆資料</li>";
+        echo "<br><li>請選擇日期查詢</li></ul>";
+        // exit();
     } else {
-        echo "<br><div>請匯入文字檔格式檔案</div>";
-        exit();
+        echo "<ul><li>請匯入文字檔格式檔案或選擇日期查詢</li></ul>";
+        // exit();
     }
 } else {
-    echo "<br><div>請匯入文字檔格式檔案或選擇日期查詢</div>";
+    echo "<ul><li>請匯入文字檔格式檔案或選擇日期查詢</li>";
 };
 
 if (isset($_POST["uploadDate"])) {
@@ -242,11 +254,11 @@ if (isset($_POST["uploadDate"])) {
         $result_setData = $db_link->query($sql_setData);
         // var_dump($result_setData);
         if ($result_setData->rowCount() == 0) {
-            echo "<br><div>查無資料</div>";
-            echo "</div>";
+            echo "<br><li>查無資料</li>";
+            echo "</ul>";
             exit();
         }
-
+        echo "</ul>";
         $bar_title_date = array();
         $bar_title_ok = array();
         $bar_title_ng = array();
@@ -338,7 +350,7 @@ if (isset($_POST["uploadDate"])) {
 </html>
 
 <?php
-// $endTime = microtime(true);
-// $totalTime = $endTime - $startTime;
-// echo "程式執行時間:" . $totalTime . "秒";
+$endTime = microtime(true);
+$totalTime = $endTime - $startTime;
+echo "程式執行時間:" . $totalTime . "秒";
 ?>
