@@ -49,9 +49,12 @@ $startTime = microtime(true);
 <?php
 // header("Content-Type: text/html; charset=utf-8");
 include("./inputFile_pdo_conn.php");
+// PDO連線檔匯入
 // include("./fileInput_conn.php");
-// 連線檔匯入
-// echo "<br>";
+// mySqli連線檔匯入
+
+$data_sum = 0;
+// 計算匯入資料
 
 $sql_count1 = "SELECT COUNT(*) as count1 FROM checktable";
 $result_count1 = $db_link->prepare($sql_count1);
@@ -126,46 +129,22 @@ if (isset($_FILES["uploadFile"])) {
             // var_dump($newRowArr);
             // 檢查格式
 
-            if (strlen($newRowArr[1]) === 0) {
-                continue;
-            }
-            if (strlen($newRowArr[2]) === 0) {
-                continue;
-            }
-            if (strlen($newRowArr[3]) === 0) {
+            $data_sum++;
+            //計算次數累積
+
+            if ((strlen($newRowArr[1]) === 0) OR (strlen($newRowArr[2]) === 0) OR (strlen($newRowArr[3]) === 0)){
                 continue;
             }
             //陣列元素為0，則跳過
-
-            if (substr($newRowArr[1], 0, 1) !== "P") {
-                continue;
-            }
-            if (substr($newRowArr[2], 0, 1) !== "P") {
-                continue;
-            }
-            if (substr($newRowArr[3], 0, 1) !== "P") {
+            if ((substr($newRowArr[1], 0, 1) !== "P") OR (substr($newRowArr[2], 0, 1) !== "P") OR (substr($newRowArr[3], 0, 1) !== "P")){
                 continue;
             }
             // 陣列元素字元不為P，則跳過
-
-            if (substr($newRowArr[1], 8, 6) !== "-00-A:") {
-                continue;
-            }
-            if (substr($newRowArr[2], 8, 6) !== "-00-A:") {
-                continue;
-            }
-            if (substr($newRowArr[3], 8, 6) !== "-00-A:") {
+            if ((substr($newRowArr[1], 8, 6) !== "-00-A:") OR (substr($newRowArr[3], 8, 6) !== "-00-A:") OR (substr($newRowArr[3], 8, 6) !== "-00-A:")){
                 continue;
             }
             //陣列元素字元不為-00-A:，則跳過
-
-            if (substr($newRowArr[1], 29, 1) !== "0") {
-                continue;
-            }
-            if (substr($newRowArr[2], 29, 1) !== "0") {
-                continue;
-            }
-            if (substr($newRowArr[3], 29, 1) !== "0") {
+            if ((substr($newRowArr[1], 29, 1) !== "0") OR (substr($newRowArr[2], 29, 1) !== "0") OR (substr($newRowArr[3], 29, 1) !== "0")){
                 continue;
             }
             // 陣列元素字元不為0，則跳過
@@ -210,6 +189,7 @@ if (isset($_FILES["uploadFile"])) {
             }
         }
 
+
         $sql_count1_1 = "SELECT COUNT(*) as count1_1 FROM checktable";
         $result_count1_1 = $db_link->prepare($sql_count1_1);
         $result_count1_1->execute();
@@ -222,17 +202,17 @@ if (isset($_FILES["uploadFile"])) {
         $result_row2_1 = $result_count2_1->fetch(PDO::FETCH_ASSOC);
         // 計算後重複紀錄表計算筆數
 
-        echo "<ul><li>已匯入檔案</li>";
-        echo "<br><li>本次匯入共" . ($result_row1_1["count1_1"] - $result_row1["count1"]) . "筆資料</li>";
-        echo "<br><li>本次重複共" . ($result_row2_1["count2_1"] - $result_row2["count2"]) . "筆資料</li>";
-        echo "<br><li>總表共" . $result_row1_1["count1_1"] . "筆資料</li>";
-        echo "<br><li>重複紀錄表共" . $result_row2_1["count2_1"] . "筆資料</li>";
-        echo "<br><li>請選擇日期查詢</li></ul>";
-        // exit();
+        echo "<ul><li>已匯入檔案</li>
+                <br><li>本次上傳檔案共" . $data_sum . "筆資料</li>
+                <br><li>本次匯入主資料表共" . ($result_row1_1["count1_1"] - $result_row1["count1"]) . "筆資料</li>
+                <br><li>本次重複資料共" . ($result_row2_1["count2_1"] - $result_row2["count2"]) . "筆資料</li>
+                <br><li>本次沒匯入資料共" . ($data_sum - ($result_row1_1["count1_1"] - $result_row1["count1"]) - ($result_row2_1["count2_1"] - $result_row2["count2"])) . "筆資料</li>
+                <br><li>主資料表共" . $result_row1_1["count1_1"] . "筆資料</li>
+                <br><li>重複資料紀錄表共" . $result_row2_1["count2_1"] . "筆資料</li>
+                <br><li>請選擇日期查詢</li></ul>";
     } else {
         echo "<ul><li>請匯入文字檔格式檔案或選擇日期查詢</li></ul>";
-        // exit();
-    }
+    }   
 } else {
     echo "<ul><li>請匯入文字檔格式檔案或選擇日期查詢</li>";
 };
@@ -254,8 +234,7 @@ if (isset($_POST["uploadDate"])) {
         $result_setData = $db_link->query($sql_setData);
         // var_dump($result_setData);
         if ($result_setData->rowCount() == 0) {
-            echo "<br><li>查無資料</li>";
-            echo "</ul>";
+            echo "<br><li>查無資料</li></ul>";
             exit();
         }
         echo "</ul>";
@@ -265,9 +244,9 @@ if (isset($_POST["uploadDate"])) {
         echo "<div class='allTable'>";
         while ($result_row = $result_setData->fetch()) {
             //PDO寫法
-            echo "<table class='table1'><tr><th>時間</th><th>OK</th><th>NG</th></tr>";
-            echo "<tr><td>" . $result_row[0] . "</td><td>" . $result_row[1] . "筆OK</td><td class='td1'>" . $result_row[2] . "筆NG</td>";
-            echo "</table><br>";
+            echo "<table class='table1'><tr><th>時間</th><th>OK</th><th>NG</th></tr>
+                    <tr><td>" . $result_row[0] . "</td><td>" . $result_row[1] . "筆OK</td><td class='td1'>" . $result_row[2] . "筆NG</td>
+                    </table><br>";
             array_push($bar_title_date, $result_row[0]);
             array_push($bar_title_ok, $result_row[1]);
             array_push($bar_title_ng, $result_row[2]);
@@ -299,7 +278,7 @@ if (isset($_POST["uploadDate"])) {
     <script>
         const ctx = document.getElementById('myChart');
         new Chart(ctx, {
-            type: 'bar',
+            type: 'line',
             data: {
                 labels: [<?php
                             foreach ($bar_title_date as $item => $value) {
