@@ -1,5 +1,7 @@
 <?php
 $startTime = microtime(true);
+ini_set('display_errors', '1');
+ini_set('error_reporting', -1);
 ?>
 
 <!DOCTYPE html>
@@ -10,10 +12,7 @@ $startTime = microtime(true);
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>檔案上傳</title>
-    <script src="jsmin.js" integrity="sha512-yQJVqoTPFSC73MaslsQaVJ0zHku4Cby3NpQzweSYju+kduWspfF4HmJ3zAo1QGERfsoXdf45q54ph8XTjOlp8A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <link rel="stylesheet" href="inputFile.css">
-    <style>
-    </style>
 </head>
 
 <body>
@@ -39,7 +38,7 @@ $startTime = microtime(true);
                 <input type="date" name="uploadDate" id="uploadDate" required>
                 <br>
                 <br>
-                <input type="submit" value="查詢">
+                <input type="submit" value="日期查詢資料">
             </form>
         </div>
 </body>
@@ -70,6 +69,13 @@ $result_row2 = $result_count2->fetch(PDO::FETCH_ASSOC);
 // echo $result_row["count2"];
 // 計算前重複紀錄表原筆數
 
+$sql_count3 = "SELECT COUNT(*) as count3 FROM checktable_errlog";
+$result_count3 = $db_link->prepare($sql_count3);
+$result_count3->execute();
+$result_row3 = $result_count3->fetch(PDO::FETCH_ASSOC);
+// echo $result_row["count2"];
+// 計算前錯誤紀錄表原筆數
+
 
 if (isset($_FILES["uploadFile"])) {
 
@@ -90,6 +96,7 @@ if (isset($_FILES["uploadFile"])) {
 
         $fileName = $fileTmpDir . $_FILES["uploadFile"]["name"];
         $oldFile = fopen($fileName, "r");
+
 
         while ($row = fgets($oldFile)) {
             $row = str_replace('"', '', $row);
@@ -122,32 +129,43 @@ if (isset($_FILES["uploadFile"])) {
             // 工件3
             $newRowArr[4] = trim($rowArr[10]);
             // 壓力值
+            // 去除右側空白(包括空格、制表符、換行符等)
             $newRowArr[5] = "";
             // 結果
-            // 去除右側空白(包括空格、制表符、換行符等)
 
             // var_dump($newRowArr);
+            // echo "<br>";
             // 檢查格式
 
             $data_sum++;
             //計算次數累積
 
-            if ((strlen($newRowArr[1]) === 0) OR (strlen($newRowArr[2]) === 0) OR (strlen($newRowArr[3]) === 0)){
+            // if ((strlen($newRowArr[1]) === 0) || (strlen($newRowArr[2]) === 0) || (strlen($newRowArr[3]) === 0)) {
+            //     $sql_insert1 = "INSERT INTO checktable_errlog (ptTime, workList1, workList2, workList3, prValue)
+            //                     VALUES('$newRowArr[0]','$newRowArr[1]','$newRowArr[2]','$newRowArr[3]','$newRowArr[4]')";
+            //     $checkErr = $db_link->prepare($sql_insert1);
+            //     $checkErr->execute();
+            //     continue;
+            // }
+            //判斷空白
+
+            $check_workList1 = substr($newRowArr[1], 0, 18);
+            $check_workList2 = substr($newRowArr[2], 0, 18);
+            $check_workList3 = substr($newRowArr[3], 0, 18);
+            $sql_check = "SELECT * FROM checktable_bom 
+                            WHERE workList1 = '$check_workList1' 
+                            AND workList2 = '$check_workList2'
+                            AND workList3 = '$check_workList3'";
+            $result_check = $db_link->prepare($sql_check);
+            $result_check->execute();
+
+            if($result_check->rowCount() == 0){
+                $sql_insert1 = "INSERT INTO checktable_errlog (ptTime, workList1, workList2, workList3, prValue)
+                VALUES('$newRowArr[0]','$newRowArr[1]','$newRowArr[2]','$newRowArr[3]','$newRowArr[4]')";
+                $checkErr = $db_link->prepare($sql_insert1);
+                $checkErr->execute();
                 continue;
             }
-            //陣列元素為0，則跳過
-            if ((substr($newRowArr[1], 0, 1) !== "P") OR (substr($newRowArr[2], 0, 1) !== "P") OR (substr($newRowArr[3], 0, 1) !== "P")){
-                continue;
-            }
-            // 陣列元素字元不為P，則跳過
-            if ((substr($newRowArr[1], 8, 6) !== "-00-A:") OR (substr($newRowArr[3], 8, 6) !== "-00-A:") OR (substr($newRowArr[3], 8, 6) !== "-00-A:")){
-                continue;
-            }
-            //陣列元素字元不為-00-A:，則跳過
-            if ((substr($newRowArr[1], 29, 1) !== "0") OR (substr($newRowArr[2], 29, 1) !== "0") OR (substr($newRowArr[3], 29, 1) !== "0")){
-                continue;
-            }
-            // 陣列元素字元不為0，則跳過
 
             if ($newRowArr[4] > 9000) {
                 $newRowArr[5] = trim("0");
@@ -156,24 +174,30 @@ if (isset($_FILES["uploadFile"])) {
             } else {
                 $newRowArr[5] = trim("1");
             }
-            //判斷壓力值為0或1
+            //判斷壓力值為0或1            
 
-            $sql_repeatData = "SELECT workList1 
-                                    FROM checktable 
-                                    WHERE workList1 = '$newRowArr[1]' 
-                                    UNION
-                                    SELECT workList2 
-                                    FROM checktable 
-                                    WHERE workList2 = '$newRowArr[2]'";
-            $result_repeatData1 = $db_link->query($sql_repeatData);
+            $sql_repeatData = "SELECT workList3 
+                FROM checktable 
+                WHERE workList3 = '$newRowArr[3]'";
+            $result_repeatData1 = $db_link->prepare($sql_repeatData);
+            $result_repeatData1->execute();
 
             if ($result_repeatData1->rowCount() == 0) {
-                // if (($result_repeatData1->rowCount() == 0) or ($result_repeatData2->rowCount() == 0) or ($result_repeatData3->rowCount() == 0)) {
-                //PDO rowCount()
-                //檢查資料庫中一筆資料是否和匯入資料有相同
-                $sql_insert = "INSERT INTO checktable (ptTime,workList1,workList2,workList3,prValue,nowResult) 
+                $sql_insert2 = "INSERT INTO checktable (ptTime, workList1, workList2, workList3, prValue, nowResult) 
                                 VALUES('$newRowArr[0]','$newRowArr[1]','$newRowArr[2]','$newRowArr[3]','$newRowArr[4]','$newRowArr[5]')";
-                $result_insert = $db_link->query($sql_insert);
+                $result_insert2 = $db_link->prepare($sql_insert2);
+                $result_condition = $result_insert2->execute();
+
+                if (!$result_condition) {
+                    $sql_insert3 = "INSERT INTO checktable_errlog (ptTime, workList1, workList2, workList3, prValue) 
+                    VALUES('$newRowArr[0]','$newRowArr[1]','$newRowArr[2]','$newRowArr[3]','$newRowArr[4]')";
+                    $result_insert3 = $db_link->prepare($sql_insert3);
+                    $result_insert3->execute();
+
+                    // $error = $result_insert3->errorInfo();
+                    // print_r($error);
+                    //顯示PDO錯誤訊息
+                }
             } else {
                 $sql_copy = "INSERT INTO checktable_repeat 
                                     SELECT ptTime, workList1, workList2, workList3, prValue, nowResult 
@@ -184,11 +208,12 @@ if (isset($_FILES["uploadFile"])) {
                                     SET ptTime = '$newRowArr[0]', workList1 = '$newRowArr[1]', workList2 = '$newRowArr[2]', workList3 = '$newRowArr[3]', prValue = '$newRowArr[4]', nowResult = '$newRowArr[5]' 
                                     WHERE workList3 = '$newRowArr[3]'";
 
-                $db_link->query($sql_copy);
-                $db_link->query($sql_update);
+                $result_copy = $db_link->prepare($sql_copy);
+                $result_copy->execute();
+                $result_update = $db_link->prepare($sql_update);
+                $result_update->execute();
             }
         }
-
 
         $sql_count1_1 = "SELECT COUNT(*) as count1_1 FROM checktable";
         $result_count1_1 = $db_link->prepare($sql_count1_1);
@@ -202,17 +227,25 @@ if (isset($_FILES["uploadFile"])) {
         $result_row2_1 = $result_count2_1->fetch(PDO::FETCH_ASSOC);
         // 計算後重複紀錄表計算筆數
 
+        $sql_count3_1 = "SELECT COUNT(*) as count3_1 FROM checktable_errlog";
+        $result_count3_1 = $db_link->prepare($sql_count3_1);
+        $result_count3_1->execute();
+        $result_row3_1 = $result_count3_1->fetch(PDO::FETCH_ASSOC);
+        // echo $result_row["count2"];
+        // 計算後錯誤紀錄表原筆數
+
         echo "<ul><li>已匯入檔案</li>
                 <br><li>本次上傳檔案共" . $data_sum . "筆資料</li>
                 <br><li>本次匯入主資料表共" . ($result_row1_1["count1_1"] - $result_row1["count1"]) . "筆資料</li>
-                <br><li>本次重複資料共" . ($result_row2_1["count2_1"] - $result_row2["count2"]) . "筆資料</li>
-                <br><li>本次沒匯入資料共" . ($data_sum - ($result_row1_1["count1_1"] - $result_row1["count1"]) - ($result_row2_1["count2_1"] - $result_row2["count2"])) . "筆資料</li>
-                <br><li>主資料表共" . $result_row1_1["count1_1"] . "筆資料</li>
-                <br><li>重複資料紀錄表共" . $result_row2_1["count2_1"] . "筆資料</li>
+                <br><li>本次匯入歷時紀錄表共" . ($result_row2_1["count2_1"] - $result_row2["count2"]) . "筆資料</li>
+                <br><li>本次匯入錯誤紀錄表共" . ($data_sum - ($result_row1_1["count1_1"] - $result_row1["count1"]) - ($result_row2_1["count2_1"] - $result_row2["count2"])) . "筆資料</li>
+                <br><li>主資料表總計" . $result_row1_1["count1_1"] . "筆資料</li>
+                <br><li>歷時紀錄表總計" . $result_row2_1["count2_1"] . "筆資料</li>
+                <br><li>錯誤紀錄表總計" . $result_row3_1["count3_1"] . "筆資料</li>
                 <br><li>請選擇日期查詢</li></ul>";
     } else {
         echo "<ul><li>請匯入文字檔格式檔案或選擇日期查詢</li></ul>";
-    }   
+    }
 } else {
     echo "<ul><li>請匯入文字檔格式檔案或選擇日期查詢</li>";
 };
@@ -231,7 +264,8 @@ if (isset($_POST["uploadDate"])) {
                         WHERE DATE(ptTime) BETWEEN '$setDate' AND '$setDate1'
                         GROUP BY DATE(ptTime);";
 
-        $result_setData = $db_link->query($sql_setData);
+        $result_setData = $db_link->prepare($sql_setData);
+        $result_setData->execute();
         // var_dump($result_setData);
         if ($result_setData->rowCount() == 0) {
             echo "<br><li>查無資料</li></ul>";
@@ -322,6 +356,68 @@ if (isset($_POST["uploadDate"])) {
                     }
                 }
             }
+        });
+    </script>
+</body>
+
+</html>
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="./jquery-3.5.1.min.js"></script>
+    <script src="./DataTables/datatables.min.js"></script>
+    <link rel="stylesheet" href="./DataTables/datatables.min.css">
+</head>
+
+<body>
+    <p>錯誤紀錄表</p>
+    <table id="example" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th>時間</th>
+                <th>工件1</th>
+                <th>工件2</th>
+                <th>工件3</th>
+                <th>壓力值</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            $sql_query = "SELECT * FROM checktable_errlog";
+            $result_query = $db_link->prepare($sql_query);
+            $result_query->execute();
+            
+            while($result_table = $result_query->fetch()) {
+                echo "<tr>
+                <td>$result_table[0]</td>
+                <td>$result_table[1]</td>
+                <td>$result_table[2]</td>
+                <td>$result_table[3]</td>
+                <td>$result_table[4]</td>   
+                </tr>";
+            }
+            // var_dump($result_table);
+            ?>
+        </tbody>
+        <tfoot>
+            <tr>
+                <th>時間</th>
+                <th>工件1</th>
+                <th>工件2</th>
+                <th>工件3</th>
+                <th>壓力值</th>
+            </tr>
+        </tfoot>
+    </table>
+    <script>
+        $(document).ready(function() {
+            $('#example').DataTable({});
         });
     </script>
 </body>
