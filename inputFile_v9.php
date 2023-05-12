@@ -1,7 +1,5 @@
 <?php
 $startTime = microtime(true);
-ini_set('display_errors', '1');
-ini_set('error_reporting', -1);
 ?>
 
 <!DOCTYPE html>
@@ -76,7 +74,6 @@ $result_row3 = $result_count3->fetch(PDO::FETCH_ASSOC);
 // echo $result_row["count2"];
 // 計算前錯誤紀錄表原筆數
 
-
 if (isset($_FILES["uploadFile"])) {
 
     $fileTmpDir = dirname(dirname(__FILE__)) . "\project_file_tmp\\";
@@ -96,7 +93,6 @@ if (isset($_FILES["uploadFile"])) {
 
         $fileName = $fileTmpDir . $_FILES["uploadFile"]["name"];
         $oldFile = fopen($fileName, "r");
-
 
         while ($row = fgets($oldFile)) {
             $row = str_replace('"', '', $row);
@@ -244,10 +240,10 @@ if (isset($_FILES["uploadFile"])) {
                 <br><li>錯誤紀錄表總計" . $result_row3_1["count3_1"] . "筆資料</li>
                 <br><li>請選擇日期查詢</li></ul>";
     } else {
-        echo "<ul><li>請匯入文字檔格式檔案或選擇日期查詢</li></ul>";
+        echo "<ul><li>請匯入文字檔格式檔案</li></ul>";
     }
-} else {
-    echo "<ul><li>請匯入文字檔格式檔案或選擇日期查詢</li>";
+}else{
+    echo "<ul><li>請匯入文字檔格式檔案或選擇日期</li></ul>";
 };
 
 if (isset($_POST["uploadDate"])) {
@@ -268,7 +264,7 @@ if (isset($_POST["uploadDate"])) {
         $result_setData->execute();
         // var_dump($result_setData);
         if ($result_setData->rowCount() == 0) {
-            echo "<br><li>查無資料</li></ul>";
+            echo "<li>查無資料</li></ul>";
             exit();
         }
         echo "</ul>";
@@ -292,77 +288,6 @@ if (isset($_POST["uploadDate"])) {
     }
 }
 ?>
-
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="./chart.js"></script>
-</head>
-
-<body>
-    <div class="myChart" style="width:800px">
-        <canvas id="myChart"></canvas>
-    </div>
-    </div>
-    </div>
-    <script>
-        const ctx = document.getElementById('myChart');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [<?php
-                            foreach ($bar_title_date as $item => $value) {
-                                echo "'" . $value . "'" . ",";
-                            }
-                            ?>],
-                datasets: [{
-                        label: 'OK',
-                        data: [<?php
-                                foreach ($bar_title_ok as $item => $value) {
-                                    echo "'" . $value . "'" . ",";
-                                }
-                                ?>],
-                        borderWidth: 3
-                    },
-                    {
-                        label: 'NG',
-                        data: [<?php
-                                foreach ($bar_title_ng as $item => $value) {
-                                    echo "'" . $value . "'" . ",";
-                                }
-                                ?>],
-                        borderWidth: 3
-                    }
-                ]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                },
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    title: {
-                        display: true,
-                        text: '資料結果'
-                    }
-                }
-            }
-        });
-    </script>
-</body>
-
-</html>
-
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -423,6 +348,81 @@ if (isset($_POST["uploadDate"])) {
 </body>
 
 </html>
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="./chart.js"></script>
+</head>
+
+<body>
+    <div class="myChart" style="width:800px">
+        <canvas id="myChart"></canvas>
+    </div>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('myChart');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [<?php
+                            foreach ($bar_title_date as $item => $value) {
+                                echo "'" . $value . "'" . ",";
+                            }
+                            ?>],
+                datasets: [{
+                        label: 'OK',
+                        data: [<?php
+                                foreach ($bar_title_ok as $item => $value) {
+                                    echo "'" . $value . "'" . ",";
+                                }
+                                ?>],
+                        borderWidth: 3
+                    },
+                    {
+                        label: 'NG',
+                        data: [<?php
+                                foreach ($bar_title_ng as $item => $value) {
+                                    echo "'" . $value . "'" . ",";
+                                }
+                                ?>],
+                        borderWidth: 3
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: '資料結果'
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
+
+
 
 <?php
 $endTime = microtime(true);
